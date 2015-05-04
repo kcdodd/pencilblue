@@ -1,0 +1,47 @@
+{
+    "uid": "joulesmith",
+    "name": "Joulesmith Theme",
+    "description": "joulesmith.com theme",
+    "version": "0.1.0",
+    "pb_version": "0.4.x",
+    "author": {
+        "name": "Joulesmith",
+        "email": "carter.dodd@gmail.com",
+        "website": "http://joulesmtith.com",
+        "contributors": [
+        ]
+    },
+    "settings": [
+        {
+            "name": "show_side_navigation",
+            "value": true
+        },
+        {
+            "name": "home_page_keywords",
+            "value": "pencilblue,joulesmith,plugin"
+        },
+        {
+            "name": "home_page_description",
+            "value": "This is the landing page of the PencilBlue joulesmith theme plugin."
+        }
+    ],
+    "permissions": {
+        "ACCESS_USER": [],
+        "ACCESS_WRITER": [],
+        "ACCESS_EDITOR": [],
+        "ACCESS_MANAGING_EDITOR": []
+    },
+    "main_module": {
+        "path": "joulesmith.js"
+    },
+    "theme": {
+        "settings": [],
+        "content_templates":
+        [
+            {
+                "file": "index",
+                "name": "Blog"
+            }
+        ]
+    }
+}
