@@ -226,7 +226,7 @@ var spm = function() {
             $('#charged_frac').html("&nbsp;" + (reactor_out.charged_frac*100).toFixed(0) + "%");
 
 
-
+            // display parameters used to make the calculation
             $("#Te").html(formatNumber(Te*1000, "eV") + " (" + formatNumber(Te*11604000, "K")+")");
             $('#ne').html(ne.toExponential(1) + " m<sup> -3 </sup>");
             document.getElementById("B").innerText = reactor_out.B.toFixed(1) + " T";
