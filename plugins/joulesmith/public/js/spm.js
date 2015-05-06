@@ -2,7 +2,7 @@ var spm = function() {
 
     var out = {};
 
-    out.calcFusion = function( Te, ne, T_frac, He3_frac, R, voltage, thermal_eff, self_heating ) {
+    out.calcFusion = function( Te, ne, T_frac, He3_frac, R, voltage, thermal_eff, self_heating, loss_multiplier ) {
     // Calculates the fusion parameters for the SPMX reactor for given
     // reactor parameters
     // Te = electron temperature
@@ -12,6 +12,8 @@ var spm = function() {
     // R = radius in meters
     // effective plugging voltage in volts
     // thermal/electric efficiency
+    // self_heating: how much plasma heating is directly from fusion products
+    // loss_multiplier: basically, factor to over-estimate losses to give margin of error to design
 
 
         // constants
@@ -80,7 +82,7 @@ var spm = function() {
             }
         }
 
-        if (Te_1 == 0) {
+        if (Te_1 === 0) {
             console.log('Te not found');
             return;
         }
@@ -137,7 +139,7 @@ var spm = function() {
         var log_Lambda = 23.5 - 0.5*Math.log(1E-6*ne) + (5/4)*Math.log(Te*1000) - Math.sqrt(1E-5 + (1/16)*Math.pow(Math.log(Te*1000)-2, 2));
 
         // diffusion loss
-        var diff_loss = Ap*611*(Math.pow(e,3))*Math.sqrt(me/mi)*(Math.pow(Z,2))*(Math.pow(ne,(3/2)))*log_Lambda/(2520*Math.sqrt(2*mu0)*(Math.pow(Math.PI,(3/2)))*(Math.pow(eps0,2))*Math.sqrt(kT*(1 + 1/Z)));
+        var diff_loss = loss_multiplier*(Ap*611*(Math.pow(e,3))*Math.sqrt(me/mi)*(Math.pow(Z,2))*(Math.pow(ne,(3/2)))*log_Lambda/(2520*Math.sqrt(2*mu0)*(Math.pow(Math.PI,(3/2)))*(Math.pow(eps0,2))*Math.sqrt(kT*(1 + 1/Z))));
 
         // energy loss through cusps
 
@@ -159,7 +161,7 @@ var spm = function() {
 
         // assume ion loss = electron loss through cusp due to ambipolar
         // condition.
-        var cusp_loss = cuspIonFlux*Ac*(3*kT/2 - e*(phi_e - phi_p) + 3*kT/2 + Z*e*(phi_i - phi_p));
+        var cusp_loss = loss_multiplier*(cuspIonFlux*Ac*(3*kT/2 - e*(phi_e - phi_p) + 3*kT/2 + Z*e*(phi_i - phi_p)));
 
         //total energy losses and confinement time
         var total_loss = cusp_loss + brem_loss + diff_loss;
@@ -186,50 +188,52 @@ var spm = function() {
         };
     };
 
-    var formatNumber = function(number) {
+    var formatNumber = function(number, unit) {
         if (Math.abs(number) > 1E9) {
-            return (number/1E9).toFixed(1) + " G";
+            return (number/1E9).toFixed(1) + " G" + unit;
         }else if (Math.abs(number) > 1E6) {
-            return (number/1E6).toFixed(1) + " M";
+            return (number/1E6).toFixed(1) + " M" + unit;
         }else if (Math.abs(number) > 1E3) {
-            return (number/1E3).toFixed(1) + " k";
+            return (number/1E3).toFixed(1) + " k" + unit;
         }else{
-            return number.toFixed(1);
+            return number.toFixed(1) + " " + unit;
         }
     };
 
-    out.make = function (){
+    out.init = function (){
 
         var Te = 20;
         var ne = 8E20;
         var T_frac = 1.0;
         var He3_frac = 0;
         var radius = 2.0;
-        var voltage = 300000;
+        var voltage = 400000;
         var selfheating = 0;
 
         var recalc = function(){
-            var reactor_out = out.calcFusion(Te, ne, T_frac, He3_frac, radius, voltage, 0.4, selfheating);
+            var reactor_out = out.calcFusion(Te, ne, T_frac, He3_frac, radius, voltage, 0.4, selfheating, 10.0);
 
-            $('#total_power').html("&nbsp;" + formatNumber(reactor_out.total_power) + "W");
-            $('#total_loss').html("&nbsp;" + formatNumber(reactor_out.total_loss) + "W"
-                + " (Bremsstrahlung: " + (reactor_out.brem_frac*100).toFixed(0) + "%, Diffusion: " + (reactor_out.diff_frac*100).toFixed(0)
-                +  "%, Cusps: " + (reactor_out.cusp_frac*100).toFixed(0) + "%)");
+            $('#total_power').html("&nbsp;" + formatNumber(reactor_out.total_power, "W"));
+            $('#total_loss').html("&nbsp;" + formatNumber(reactor_out.total_loss, "W"));
+
+            $('#brem_loss').html("&nbsp;" + (reactor_out.brem_frac*100).toFixed(0) + "%");
+            $('#diff_loss').html("&nbsp;" + (reactor_out.diff_frac*100).toFixed(0) + "%");
+            $('#cusp_loss').html("&nbsp;" + (reactor_out.cusp_frac*100).toFixed(0) + "%");
 
             $('#Q').html("&nbsp;" + reactor_out.Q.toFixed(1));
-            $('#net_power').html("&nbsp;" + formatNumber(reactor_out.net_power) + "W");
+            $('#net_power').html("&nbsp;" + formatNumber(reactor_out.net_power, "W"));
             $('#neutron_frac').html("&nbsp;" + (reactor_out.neutron_frac*100).toFixed(0) + "%");
             $('#charged_frac').html("&nbsp;" + (reactor_out.charged_frac*100).toFixed(0) + "%");
 
 
 
-            document.getElementById("Te").innerText = Te + " keV";
+            $("#Te").html(formatNumber(Te*1000, "eV") + " (" + formatNumber(Te*11604000, "K")+")");
             $('#ne').html(ne.toExponential(1) + " m<sup> -3 </sup>");
             document.getElementById("B").innerText = reactor_out.B.toFixed(1) + " T";
             document.getElementById("T_frac").innerText = T_frac.toFixed(2);
             document.getElementById("He3_frac").innerText = He3_frac.toFixed(2);
             document.getElementById("radius").innerText = radius + " m";
-            document.getElementById("voltage").innerText = voltage/1000 + " kV";
+            document.getElementById("voltage").innerText = formatNumber(voltage, "V");
             document.getElementById("selfheating").innerText = selfheating*100 + "%";
 
         };
@@ -330,9 +334,9 @@ var spm = function() {
                 recalc();
             }
         });
-    };
 
-    out.make();
+        recalc();
+    };
 
     return out;
 
