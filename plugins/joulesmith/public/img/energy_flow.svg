@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1185.5713"
+   height="428.27026"
+   id="svg3045"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="energy_flow.svg">
+  <defs
+     id="defs3047" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="526.82038"
+     inkscape:cy="259.62056"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1018"
+     inkscape:window-x="1672"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     fit-margin-top="10"
+     fit-margin-left="10"
+     fit-margin-bottom="10"
+     fit-margin-right="10" />
+  <metadata
+     id="metadata3050">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-42.394337,-41.539345)">
+    <path
+       style="fill:#eea57c;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 986.42857,380.21932 31.78573,0 c 9.3519,0 13.3928,-6.13815 13.3928,-13.39285 l 0,-163.24496 c 0,-7.66139 6.7683,-13.7689 13.7689,-13.7689 l 56.1954,0 0,-129.420227 -280.00598,0 c -14.708,0 -21.4114,39.395949 -33.9664,39.395949 l -28.97446,0 0,111.621858 71.15261,0 c 13.71176,0 19.6914,-37.88072 32.26174,-37.88072 l 181.19609,0 c -14.1421,0 -29.5469,8.63119 -29.5469,33.33503 l 0,147.98735 c 0,5.6557 -1.2157,9.34391 -9.3439,9.34391 l -17.93024,0 z"
+       id="path4155"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccccccccccccc" />
+    <path
+       style="fill:#ee7c85;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 544.64286,389.50504 c 50.17978,0 62.48413,-58.57143 103.92857,-58.57143 l 0,-227.85714 -104.28571,0 0,167.5 c 25.4485,0.2844 56.63739,0.35714 72.14285,0.35714 -39.20817,0 -48.72633,46.42857 -71.78571,46.42857 z"
+       id="path4153"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccccccc" />
+    <path
+       style="fill:#7c9eee;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 165,266.29075 268.57143,0 0,-167.142855 -269.64286,0 z"
+       id="path4151"
+       inkscape:connector-curvature="0" />
+    <path
+       id="path4040-2"
+       style="fill:#c87cee;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 166.24999,329.68366 c 10.93567,0 14.76851,0.10908 26.87151,0.10908 20.66649,0 50.65808,55.18608 71.43906,55.16237 l 92.37008,-0.10539 c -23.51015,0.0268 -37.37687,16.58669 -37.37687,37.1773 0,20.5906 16.69201,37.28258 37.28261,37.28258 l 688.88812,0 c 20.6008,-10e-6 37.2928,-16.69199 37.2928,-37.28259 0,-20.5906 -16.692,-37.28266 -37.249,-37.18726 l -58.2683,0 M 164.28571,107.3622 166.24999,329.68366 M 987.5,384.83975 l 0,19.93963 58.2077,0 c 9.3144,-0.075 17.07,7.6806 17.07,17.24756 0,9.56696 -7.7556,17.32251 -17.3413,17.32253 l -687.61787,2e-5 c -9.56696,0 -17.32252,-7.75555 -17.32252,-17.32251 0,-9.56696 7.75527,-17.26085 17.06998,-17.24756 l 52.55594,0.075 c 8.23419,0.0118 8.39645,-12.62691 19.1929,-12.62691 l 0,-41.41625 c -10.79882,0 -10.36012,13.55638 -21.2132,13.55638 -10.85308,0 -123.56649,0 -132.70859,0 -9.14211,0 -20.54937,-12.79895 -23.25018,-15.57687 l 177.85714,0 0,-32.85714 c 0,0 -131.58786,0.47178 -151.42857,0 -19.84071,-0.47178 -36.15871,-47.14286 -56.32089,-47.14286 l -57.25054,0 1.24999,60.89289"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cssssccscccccscccssccccssssccc" />
+    <rect
+       style="fill:#ffab3c;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3053"
+       width="110.21133"
+       height="237.35417"
+       x="54.894337"
+       y="97.256523" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="110.71149"
+       y="209.50504"
+       id="text3823"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3825"
+         x="110.71149"
+         y="209.50504"
+         style="font-weight:bold;text-align:center;text-anchor:middle;-inkscape-font-specification:Sans Bold">Fusion</tspan><tspan
+         sodipodi:role="line"
+         x="110.71149"
+         y="229.50504"
+         id="tspan3827"
+         style="font-weight:bold;text-align:center;text-anchor:middle;-inkscape-font-specification:Sans Bold">Energy</tspan></text>
+    <rect
+       style="fill:#ffab3c;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3053-1"
+       width="114.76337"
+       height="80.477638"
+       x="429.76117"
+       y="312.83765" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       x="486.92023"
+       y="349.99524"
+       id="text3847"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3849"
+         x="486.92023"
+         y="349.99524">Diverter/</tspan><tspan
+         sodipodi:role="line"
+         x="486.92023"
+         y="369.99524"
+         id="tspan4187">Limiter</tspan></text>
+    <path
+       style="fill:#99ee7c;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 1101.4286,219.50504 -342.14288,0 0,109.58792 18.60788,0 c 21.5465,0 37.34867,68.57218 63.53374,68.57218 l 29.32415,0 0,-35.35534 -19.18238,0 c -19.15424,0 -36.80936,-64.02649 -58.49784,-64.02649 l 308.50013,0 z"
+       id="path4157"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccccc" />
+    <rect
+       style="fill:#ffab3c;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3053-4"
+       width="110.21133"
+       height="237.35417"
+       x="649.18005"
+       y="97.256531" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       x="703.15063"
+       y="189.50504"
+       id="text3889"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3891"
+         x="703.15063"
+         y="189.50504">Thermal</tspan><tspan
+         sodipodi:role="line"
+         x="703.15063"
+         y="209.50504"
+         id="tspan3893">to</tspan><tspan
+         sodipodi:role="line"
+         x="703.15063"
+         y="229.50504"
+         id="tspan3895">Electric</tspan><tspan
+         sodipodi:role="line"
+         x="703.15063"
+         y="249.50504"
+         id="tspan3897">Generator</tspan></text>
+    <rect
+       style="fill:#ffab3c;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3053-1-8"
+       width="114.76337"
+       height="80.477638"
+       x="871.1897"
+       y="339.26624" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       x="925.69757"
+       y="364.50504"
+       id="text3847-9"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3849-4"
+         x="925.69757"
+         y="364.50504">Plasma</tspan><tspan
+         sodipodi:role="line"
+         x="925.69757"
+         y="384.50504"
+         id="tspan3923">Heating</tspan><tspan
+         sodipodi:role="line"
+         x="925.69757"
+         y="404.50504"
+         id="tspan3925">Supply</tspan></text>
+    <rect
+       style="fill:#ffab3c;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3053-1-8-8"
+       width="114.08605"
+       height="94.086037"
+       x="1101.5283"
+       y="213.89058" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       x="1159.4525"
+       y="261.64792"
+       id="text3963"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3965"
+         x="1159.4525"
+         y="261.64792">Power</tspan><tspan
+         sodipodi:role="line"
+         x="1159.4525"
+         y="281.64792"
+         id="tspan3967">Grid</tspan></text>
+    <rect
+       style="fill:#ffab3c;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3053-1-8-8-4"
+       width="112.90884"
+       height="148.62309"
+       x="1102.1169"
+       y="54.479202" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       x="1159.4525"
+       y="114.20047"
+       id="text3963-5"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="1159.4525"
+         y="114.20047"
+         id="tspan3967-1">Waste</tspan><tspan
+         sodipodi:role="line"
+         x="1159.4525"
+         y="134.20047"
+         id="tspan4016">Heat</tspan><tspan
+         sodipodi:role="line"
+         x="1159.4525"
+         y="154.20047"
+         id="tspan4161">Management</tspan></text>
+    <rect
+       style="fill:#ffab3c;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect3053-4-7"
+       width="111.6676"
+       height="177.38188"
+       x="432.73761"
+       y="96.528389" />
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+       x="489.65903"
+       y="188.07648"
+       id="text4036"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4038"
+         x="489.65903"
+         y="188.07648">Blanket</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="182.97935"
+       y="186.17125"
+       id="text4123"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4125"
+         x="182.97935"
+         y="186.17125">neutrons</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="264.15488"
+       y="379.60059"
+       id="text4127"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4129"
+         x="264.15488"
+         y="379.60059">self-heating</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="249.50768"
+       y="336.16403"
+       id="text4131"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4133"
+         x="249.50768"
+         y="336.16403">direct high-energy loss </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="174.6846"
+       y="293.73761"
+       id="text4135"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4137"
+         x="174.6846"
+         y="293.73761">charged</tspan><tspan
+         sodipodi:role="line"
+         x="174.6846"
+         y="313.73761"
+         id="tspan4139">particles</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;text-anchor:middle;text-align:center"
+       x="392.40005"
+       y="379.60059"
+       id="text4141"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4143"
+         x="367.44302"
+         y="379.60059">plasma</tspan><tspan
+         sodipodi:role="line"
+         x="367.44302"
+         y="399.60059"
+         id="tspan4145">loss</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="590.93927"
+       y="453.58682"
+       id="text4147"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4149"
+         x="590.93927"
+         y="453.58682">plasma heating</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="599.25726"
+       y="182.92628"
+       id="text4163"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4165"
+         x="599.25726"
+         y="182.92628">high</tspan><tspan
+         sodipodi:role="line"
+         x="599.25726"
+         y="202.92628"
+         id="tspan4169">temperature</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="948.77014"
+       y="113.22576"
+       id="text4171"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4173"
+         x="948.77014"
+         y="113.22576">low</tspan><tspan
+         sodipodi:role="line"
+         x="948.77014"
+         y="133.22575"
+         id="tspan4177">temperature</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:16px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="903.04431"
+       y="265.75879"
+       id="text4179"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4181"
+         x="903.04431"
+         y="265.75879">electrical</tspan></text>
+  </g>
+</svg>
