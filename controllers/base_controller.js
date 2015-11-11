@@ -16,9 +16,8 @@
 */
 
 //dependencies 
-var url       = require('url');
-var Sanitizer = require('sanitize-html');
-var util      = require('../include/util.js');
+var url  = require('url');
+var util = require('../include/util.js');
 
 module.exports = function BaseControllerModule(pb) {
     
@@ -29,7 +28,7 @@ module.exports = function BaseControllerModule(pb) {
      * @class BaseController
      * @constructor
      */
-    function BaseController(){};
+    function BaseController(){}
 
     //constants
     /**
@@ -68,7 +67,22 @@ module.exports = function BaseControllerModule(pb) {
      * @type {String}
      */
     var ALERT_PATTERN = '<div class="alert %s error_success">%s<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button></div>';
-
+    
+    /**
+     * A mapping that converts the HTTP standard for content-type encoding and 
+     * what the Buffer prototype expects
+     * @static
+     * @private
+     * @readonly
+     * @property ENCODING_MAPPING
+     * @type {Object}
+     */
+    var ENCODING_MAPPING = Object.freeze({
+        'UTF-8': 'utf8',
+        'US-ASCII': 'ascii',
+        'UTF-16LE': 'utf16le'
+    });
+    
     /**
      * Responsible for initializing a controller.  Properties from the
      * RequestHandler are passed down so that the controller has complete access to
@@ -103,8 +117,12 @@ module.exports = function BaseControllerModule(pb) {
         this.query               = props.query;
         this.pageName            = '';
 
-        var self = this;
-        this.templateService     = new pb.TemplateService(this.localizationService);
+        var self   = this;
+        var tsOpts = {
+            ls: this.localizationService,
+            activeTheme: props.activeTheme
+        };
+        this.templateService = new pb.TemplateService(tsOpts);
         this.templateService.registerLocal('locale', this.ls.language);
         this.templateService.registerLocal('error_success', function(flag, cb) {
             self.displayErrorOrSuccessCallback(flag, cb);
@@ -127,8 +145,35 @@ module.exports = function BaseControllerModule(pb) {
             });
         });
         this.ts = this.templateService;
+        
+        /**
+         *
+         * @property activeTheme
+         * @type {String}
+         */
+        this.activeTheme = props.activeTheme;
+        
+        //build out a base service context that can be cloned and passed to any 
+        //service objects
+        this.context = {
+            req: this.req,
+            session: this.session,
+            ls: this.ls,
+            ts: this.ts,
+            activeTheme: this.activeTheme
+        };
 
         cb();
+    };
+    
+    /**
+     * Retrieves a context object that contains the necessary information for 
+     * service prototypes
+     * @method getServiceContext
+     * @return {Object}
+     */
+    BaseController.prototype.getServiceContext = function(){
+        return util.merge(this.context, {});
     };
 
     /**
@@ -164,7 +209,8 @@ module.exports = function BaseControllerModule(pb) {
     BaseController.prototype.formError = function(message, redirectLocation, cb) {
 
         this.session.error = message;
-        cb(pb.RequestHandler.generateRedirect(pb.config.siteRoot + redirectLocation));
+        var uri = pb.UrlService.createSystemUrl(redirectLocation);
+        cb(pb.RequestHandler.generateRedirect(uri));
     };
 
     /**
@@ -174,14 +220,14 @@ module.exports = function BaseControllerModule(pb) {
      * @param {Function} cb
      */
     BaseController.prototype.displayErrorOrSuccessCallback = function(flag, cb) {
-        if(this.session['error']) {
-            var error = this.session['error'];
-            delete this.session['error'];
+        if(this.session.error) {
+            var error = this.session.error;
+            delete this.session.error;
             cb(null, new pb.TemplateValue(util.format(ALERT_PATTERN, 'alert-danger', this.localizationService.get(error)), false));
         }
-        else if(this.session['success']) {
-            var success = this.session['success'];
-            delete this.session['success'];
+        else if(this.session.success) {
+            var success = this.session.success;
+            delete this.session.success;
             cb(null, new pb.TemplateValue(util.format(ALERT_PATTERN, 'alert-success', this.localizationService.get(success)), false));
         }
         else {
@@ -214,13 +260,20 @@ module.exports = function BaseControllerModule(pb) {
      * @param {Function} cb
      */
     BaseController.prototype.getPostParams = function(cb) {
+        var self = this;
+        
         this.getPostData(function(err, raw){
             if (util.isError(err)) {
                 cb(err, null);
                 return;
             }
 
-            var postParams = url.parse('?' + raw, true).query;
+            //lookup encoding
+            var encoding = pb.BaseBodyParser.getContentEncoding(self.req);
+            encoding = ENCODING_MAPPING[encoding] ? ENCODING_MAPPING[encoding] : 'utf8';
+            
+            //convert to string
+            var postParams = url.parse('?' + raw.toString(encoding), true).query;
             cb(null, postParams);
         });
     };
@@ -231,16 +284,21 @@ module.exports = function BaseControllerModule(pb) {
      * @param {Function} cb
      */
     BaseController.prototype.getJSONPostParams = function(cb) {
+        var self = this;
+        
         this.getPostData(function(err, raw){
             if (util.isError(err)) {
-                cb(err, null);
-                return;
+                return cb(err, null);
             }
+            
+            //lookup encoding
+            var encoding = pb.BaseBodyParser.getContentEncoding(self.req);
+            encoding = ENCODING_MAPPING[encoding] ? ENCODING_MAPPING[encoding] : 'utf8';
 
             var error      = null;
             var postParams = null;
             try {
-                postParams = JSON.parse(raw);
+                postParams = JSON.parse(raw.toString(encoding));
             }
             catch(err) {
                 error = err;
@@ -255,16 +313,25 @@ module.exports = function BaseControllerModule(pb) {
      * @param {Function} cb
      */
     BaseController.prototype.getPostData = function(cb) {
-        var body = '';
+        var buffers     = [];
+        var totalLength = 0;
+        
         this.req.on('data', function (data) {
-            body += data;
+            buffers.push(data);
+            totalLength += data.length;
+            
             // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-            if (body.length > 1e6) {
+            if (totalLength > 1e6) {
                 // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
-                cb(new PBError("POST limit reached! Maximum of 1MB.", 400), null);
+                var err = new Error("POST limit reached! Maximum of 1MB.");
+                err.code = 400;
+                cb(err, null);
             }
         });
         this.req.on('end', function () {
+            
+            //create one big buffer.
+            var body = Buffer.concat (buffers, totalLength);
             cb(null, body);
         });
     };
@@ -282,13 +349,13 @@ module.exports = function BaseControllerModule(pb) {
             if (typeof queryObject[requiredParameters[i]] === 'undefined') {
                 return this.localizationService.get('FORM_INCOMPLETE');
             }
-            else if (queryObject[requiredParameters[i]].length == 0) {
+            else if (queryObject[requiredParameters[i]].length === 0) {
                 return this.localizationService.get('FORM_INCOMPLETE');
             }
         }
 
-        if(queryObject['password'] && queryObject['confirm_password']) {
-            if(queryObject['password'] != queryObject['confirm_password']) {
+        if(queryObject.password && queryObject.confirm_password) {
+            if(queryObject.password !== queryObject.confirm_password) {
                 return this.localizationService.get('PASSWORD_MISMATCH');
             }
         }
@@ -331,7 +398,7 @@ module.exports = function BaseControllerModule(pb) {
      * (BaseController.getDefaultSanitizationRules) or those provided by the call
      * to BaseController.getSanitizationRules.
      * @method sanitizeObject
-     * @param {Object}
+     * @param {Object} obj
      */
     BaseController.prototype.sanitizeObject = function(obj) {
         if (!util.isObject(obj)) {
@@ -351,6 +418,7 @@ module.exports = function BaseControllerModule(pb) {
     /**
      *
      * @method getSanitizationRules
+     * @return {Object}
      */
     BaseController.prototype.getSanitizationRules = function() {
         return {};
@@ -358,64 +426,33 @@ module.exports = function BaseControllerModule(pb) {
 
     /**
      * The sanitization rules that apply to Pages and Articles
+     * @deprecated Since 0.4.1
      * @static
      * @method getContentSanitizationRules
      */
     BaseController.getContentSanitizationRules = function() {
-        return {
-            allowedTags: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol', 'nl', 'li', 'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br', 'div', 'table', 'thead', 'caption', 'tbody', 'tr', 'th', 'td', 'pre', 'img', 'u', 'span' ],
-            allowedAttributes: {
-                a: [ 'href', 'name', 'target', 'class', 'align'],
-                img: [ 'src', 'class', 'align'],
-                p: ['align', 'class'],
-                h1: ['style', 'class', 'align'],
-                h2: ['style', 'class', 'align'],
-                h3: ['style', 'class', 'align'],
-                h4: ['style', 'class', 'align'],
-                h5: ['style', 'class', 'align'],
-                h6: ['style', 'class', 'align'],
-                div: ['style', 'class', 'align'],
-                span: ['style', 'class', 'align'],
-                table: ['style', 'class', 'align'],
-                tr: ['style', 'class', 'align'],
-                th: ['style', 'class', 'align'],
-                td: ['style', 'class', 'align'],
-            },
-
-            // Lots of these won't come up by default because we don't allow them
-            selfClosing: [ 'img', 'br', 'hr', 'area', 'base', 'basefont', 'input', 'link', 'meta' ],
-
-            // URL schemes we permit
-            allowedSchemes: [ 'http', 'https', 'ftp', 'mailto' ]
-        };
+        return pb.BaseObjectService.getContentSanitizationRules();
     };
 
     /**
+     * @deprecated Since 0.4.1
      * @static
      * @method getDefaultSanitizationRules
      */
     BaseController.getDefaultSanitizationRules = function() {
-        return {
-            allowedTags: [],
-            allowedAttributes: {}
-        };
+        return pb.BaseObjectService.getDefaultSanitizationRules();
     };
 
     /**
      *
+     * @deprecated Since 0.4.1
      * @static
      * @method sanitize
      * @param {String} value
      * @param {Object} [config]
      */
     BaseController.sanitize = function(value, config) {
-        if (!value) {
-            return value;
-        }
-        else if (!util.isObject(config)) {
-            config = BaseController.getDefaultSanitizationRules();
-        }
-        return Sanitizer(value, config);
+        return pb.BaseObjectService.sanitize(value, config);
     };
 
     /**

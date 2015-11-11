@@ -21,7 +21,9 @@ var path = require('path');
 /**
  * Requirements - Responsible for declaring all of the system types and modules
  * needed to construct the system API object.
- * @copyright PencilBlue, all rights reserved.
+ * @class PB
+ * @param {Object} config
+ * @return {Object} The pb namespace
  */
 module.exports = function PB(config) {
     
@@ -102,8 +104,14 @@ module.exports = function PB(config) {
     pb.FormAuthentication             = Authentication.FormAuthentication;
 
     //setup user service
-    pb.UserService = require(path.join(config.docRoot, '/include/service/entities/user_service.js'))(pb);
-    pb.users       = new pb.UserService();
+    pb.BaseObjectService = require(path.join(config.docRoot, '/include/service/base_object_service.js'))(pb);
+    pb.UserService       = require(path.join(config.docRoot, '/include/service/entities/user_service.js'))(pb);
+    Object.defineProperty(pb, 'users', {
+        get: function() {
+            pb.log.warn('PencilBlue: pb.users is deprecated.  Use new pb.UserService(context) instead');
+            return new pb.UserService();
+        }
+    });
 
     //setup request handling
     var BodyParsers        = require(path.join(config.docRoot, 'include/http/parsers'))(pb);
@@ -111,6 +119,7 @@ module.exports = function PB(config) {
     pb.JsonBodyParser      = BodyParsers.JsonBodyParser;
     pb.FormBodyParser      = BodyParsers.FormBodyParser;
     pb.BaseController      = require(path.join(config.docRoot, '/controllers/base_controller.js'))(pb);
+    pb.BaseApiController   = require(path.join(config.docRoot, '/controllers/api/base_api_controller.js'))(pb);
     pb.ViewController      = require(path.join(config.docRoot, '/controllers/view_controller.js'))(pb);
     pb.FormController      = require(path.join(config.docRoot, '/controllers/form_controller.js'))(pb);
     pb.DeleteController    = require(path.join(config.docRoot, '/controllers/delete_controller.js'))(pb);
@@ -221,6 +230,15 @@ module.exports = function PB(config) {
     //content services
     pb.SectionService = require(config.docRoot+'/include/service/entities/section_service.js')(pb);
     pb.TopMenuService = require(config.docRoot+'/include/theme/top_menu.js')(pb);
+    
+    //object services
+    pb.TopicService         = require(path.join(config.docRoot, '/include/service/entities/topic_service.js'))(pb);
+    pb.ContentObjectService = require(path.join(config.docRoot, '/include/service/entities/content/content_object_service.js'))(pb);
+    pb.ArticleServiceV2     = require(path.join(config.docRoot, '/include/service/entities/content/article_service_v2.js'))(pb);
+    pb.ArticleRenderer      = require(path.join(config.docRoot, '/include/service/entities/content/article_renderer.js'))(pb);
+    pb.PageRenderer         = require(path.join(config.docRoot, '/include/service/entities/content/page_renderer.js'))(pb);
+    pb.PageService          = require(path.join(config.docRoot, '/include/service/entities/content/page_service.js'))(pb);
+    pb.ContentViewLoader    = require(path.join(config.docRoot, '/include/service/entities/content/content_view_loader.js'))(pb);
     
     var ArticleServiceModule = require(path.join(config.docRoot, '/include/service/entities/article_service.js'))(pb);
     pb.ArticleService        = ArticleServiceModule.ArticleService;

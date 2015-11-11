@@ -43,7 +43,7 @@ module.exports = function(pb) {
 
     
     PluginSettingsFormController.prototype.get = function(cb) {
-        var self = this;console.log(this.constructor.name);
+        var self = this;
 
         var uid = this.pathVars.id;
         this.pluginService.getPlugin(uid, function(err, plugin) {
@@ -118,12 +118,12 @@ module.exports = function(pb) {
     
     
     PluginSettingsFormController.prototype.post = function(cb) {
-        var self = this;console.log(this.constructor.name);
+        var self = this;
         var post = this.body;
 
         //retrieve settings
         var uid = this.pathVars.id;
-        self.getSettings(uid, function(err, settings) {console.log(settings);
+        self.getSettings(uid, function(err, settings) {
             if(util.isError(err)) {
                 return self.reqHandler.serveError(err);
             }
@@ -226,7 +226,7 @@ module.exports = function(pb) {
      * @method render
      *
      */
-    PluginSettingsFormController.geSubNavItems = function(key, ls, data) {
+    PluginSettingsFormController.getSubNavItems = function(key, ls, data) {
         return [
             {
                 name: 'manage_plugins',
@@ -333,7 +333,7 @@ module.exports = function(pb) {
     };
 
     //register admin sub-nav
-    pb.AdminSubnavService.registerFor(SUB_NAV_KEY, PluginSettingsFormController.geSubNavItems);
+    pb.AdminSubnavService.registerFor(SUB_NAV_KEY, PluginSettingsFormController.getSubNavItems);
 
     //exports
     return PluginSettingsFormController;

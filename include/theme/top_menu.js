@@ -162,9 +162,13 @@ module.exports = function TopMenuServiceModule(pb) {
      * @param {Object}   accountButtons Account buttons object
      * @param {Function} cb             Callback function
      */
-    TopMenuService.getBootstrapNav = function(navigation, accountButtons, cb)
-    {
-        var ts = new pb.TemplateService();
+    TopMenuService.getBootstrapNav = function(navigation, accountButtons, options, cb) {
+        if (util.isFunction(options)) {
+            cb = options;
+            options = {};
+        }
+        
+        var ts = new pb.TemplateService(options);
         ts.load('elements/top_menu/link', function(err, linkTemplate) {
             ts.load('elements/top_menu/dropdown', function(err, dropdownTemplate) {
                 ts.load('elements/top_menu/account_button', function(err, accountButtonTemplate) {
@@ -223,6 +227,28 @@ module.exports = function TopMenuServiceModule(pb) {
 
                     cb(bootstrapNav, buttons);
                 });
+            });
+        });
+    };
+    
+    /**
+     * @method getNavItems
+     * @param {Object} options
+     * @param {Localization} options.ls
+     * @param {String} options.activeTheme
+     * @param {Object} options.session
+     * @param {String} options.currUrl
+     * @param {Function} cb
+     */
+    TopMenuService.prototype.getNavItems = function(options, cb) {
+        TopMenuService.getTopMenu(options.session, options.ls, options, function(themeSettings, navigation, accountButtons) {
+            TopMenuService.getBootstrapNav(navigation, accountButtons, options, function(navigation, accountButtons) {
+                var navItems = {
+                    themeSettings: themeSettings,
+                    navigation: navigation,
+                    accountButtons: accountButtons
+                };
+                cb(null, navItems);
             });
         });
     };

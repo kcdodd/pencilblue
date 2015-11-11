@@ -15,72 +15,116 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-module.exports = function ArticleModule(pb) {
+module.exports = function(pb) {
     
     //pb dependencies
-    var util  = pb.util;
-    var Index = require('./index.js')(pb);
+    var util = pb.util;
     
     /**
      * Loads a single article
+     * @class ArticleViewController
+     * @constructor
+     * @extends BaseController
      */
-    function Article(){}
-    util.inherits(Article, Index);
+    function ArticleViewController(){}
+    util.inherits(ArticleViewController, pb.BaseController);
 
+    /**
+     * @method init
+     * @param {Object} content
+     * @param {Function} cb
+     */
+    ArticleViewController.prototype.init = function(context, cb) {
+        var self = this;
+        var init = function(err) {
+            if (util.isError(err)) {
+                return cb(err);
+            }
+            
+            //create the service
+            self.service = new pb.ArticleServiceV2(self.getServiceContext());
 
-    Article.prototype.render = function(cb) {
+            //create the loader context
+            var context     = self.getServiceContext();
+            context.service = self.service;
+            self.contentViewLoader = new pb.ContentViewLoader(context);
+            
+            cb(null, true);
+        };
+        ArticleViewController.super_.prototype.init.apply(this, [context, init]);
+    };
+
+    /**
+     * @method render
+     * @param {Function} cb
+     */
+    ArticleViewController.prototype.render = function(cb) {
         var self    = this;
         var custUrl = this.pathVars.customUrl;
-
-        //check for object ID as the custom URL
-        var where  = null;
-        if(pb.validation.isIdStr(custUrl)) {
-            where = {_id: pb.DAO.getObjectID(custUrl)};
-            if (pb.log.isSilly()) {
-                pb.log.silly("ArticleController: The custom URL was not an object ID [%s].  Will now search url field. [%s]", custUrl, e.message);
-            }
-        }
-        else {
-            where = {url: custUrl};
-        }
-
-        // fall through to URL key
-        if (where === null) {
-            where = {url: custUrl};
-        }
         
         //attempt to load object
-        var dao = new pb.DAO();
-        dao.loadByValues(where, 'article', function(err, article) {
-            if (util.isError(err) || article == null) {
-                if (where.url) {
-                    self.reqHandler.serve404();
-                    return;
+        var opts = {
+            render: true,
+            where: this.getWhereClause(custUrl)
+        };
+        this.service.getSingle(opts, function(err, article) {
+            if (util.isError(err)) {
+                return cb(err);
+            }
+            else if (article == null) {
+                return self.reqHandler.serve404();   
+            }
+                
+            var options = {};
+            self.contentViewLoader.render([article], options, function(err, html) {
+                if (util.isError(err)) {
+                    return cb(err);
                 }
 
-                dao.loadByValues({url: custUrl}, 'article', function(err, article) {
-                    if (util.isError(err) || article == null) {
-                        self.reqHandler.serve404();
-                        return;
-                    }
-
-                    self.renderArticle(article, cb);
-                });
-
-                return;
-            }
-
-            self.renderArticle(article, cb);
+                var result = {
+                    content: html
+                };
+                cb(result);
+            });
         });
     };
     
-    Article.prototype.renderArticle = function(article, cb) {
-        this.req.pencilblue_article = article._id.toString();
-        this.article = article;
-        this.setPageName(article.name);
-        Article.super_.prototype.render.apply(this, [cb]);
+    /**
+     * Builds out the where clause for finding the article to render.  Because 
+     * MongoDB has an object ID represented by 12 characters we must account 
+     * for this condition by building a where clause with an "or" condition.  
+     * Otherwise we will only query on the url key
+     * @method getWhereClause
+     * @param {String} custUrl Represents the article's ID or its slug
+     * @return {Object} An object representing the where clause to use in the 
+     * query to locate the article
+     */
+    ArticleViewController.prototype.getWhereClause = function(custUrl) {
+        
+        //put a check to look up by ID *FIRST*
+        var conditions = [];
+        if(pb.validation.isIdStr(custUrl, true)) {
+            conditions.push(pb.DAO.getIdWhere(custUrl));
+        }
+        
+        //put a check to look up by URL
+        conditions.push({
+            url: custUrl 
+        });
+        
+        //check for object ID as the custom URL
+        var where;
+        if (conditions.length > 1) {
+            where = {
+                $or: conditions
+            };
+        }
+        else {
+            where = conditions[0];
+        }
+        return where;
     };
 
     //exports
-    return Article;
+    return ArticleViewController;
 };

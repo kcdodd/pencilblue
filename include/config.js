@@ -32,6 +32,8 @@ var winston = require('winston');
  * 1) copy "sample.config.json" to "/etc/pencilblue/config.json"
  * 2) Override the properties as desired.
  * 3) Add any custom properties you wish to provide for your specific purposes.
+ * @class Configuration
+ * @constructor
  */
 function Configuration(){}
 
@@ -401,6 +403,18 @@ var BASE_CONFIG = {
                 spec: {created: ASC},
                 options: {}
             },
+            
+            //comment
+            {
+                collection: 'comment',
+                spec: {article: ASC},
+                options: {}
+            },
+            {
+                collection: 'comment',
+                spec: {commenter: ASC},
+                options: {}
+            },
 
             //topic
             {
@@ -496,11 +510,13 @@ var BASE_CONFIG = {
     //It can be of any of the following: silly, debug, info, warn, error.  The 
     //file property specifes the absolute file path where the log file should 
     //be written.  If no value is provided the file transport will not be 
-    //configured.
+    //configured. The "showErrors" property indicates if the stack trace should 
+    //be included in the serialization of the error.
     logging: {
         
         level: "info",
-        file: LOG_FILE
+        file: LOG_FILE,
+        showErrors: true
     },
 
     //System settings always have the persistent storage layer on.  Optionally,
@@ -606,7 +622,11 @@ var BASE_CONFIG = {
             use_handoff_port_in_redirect: false,
             key: "ssl/key.pem",
             cert: "ssl/cert.crt",
-            chain: "ssl/chain.crt"
+            
+            //The certificate authority, or chain, is optional.  It is 
+            //recommended to keep the paths consistent and place the CA cert 
+            //at: "ssl/chain.crt"
+            chain: null
         },
 
         //when non-empty, a header (X-POWERED-BY) will be added to each outgoing
@@ -649,7 +669,7 @@ var BASE_CONFIG = {
     localization: {
         
         //The default locale is the fallback when localization fails for the user's desired language.
-        defaultLocale: 'en_US'
+        defaultLocale: 'en-US'
     },
     
     //The locking service provides a common mechanism for processes to reserve 
@@ -670,11 +690,14 @@ var BASE_CONFIG = {
     
     //Pulls in the package.json file for PB and extracts the version so it is 
     //available in the configuration.
-    version: require(path.join(Configuration.DOCUMENT_ROOT, 'package.json')).version
+    version: require(path.join(Configuration.DOCUMENT_ROOT, 'package.json')).version,
 };
 
 /** 
  * Retrieve the base configuration
+ * @static
+ * @method getBaseConfig
+ * @return {Object}
  */
 Configuration.getBaseConfig = function() {
     return util.clone(BASE_CONFIG);
@@ -685,6 +708,10 @@ Configuration.getBaseConfig = function() {
  * NOTE: This should only be called once by the core code at startup.  Calling
  * this function after the server starts may cause unintended behavior across
  * the system.
+ * @static
+ * @method load
+ * @param {Array|String} filePaths
+ * @return {Object}
  */
 Configuration.load = function(filePaths) {
     if (util.isString(filePaths)) {

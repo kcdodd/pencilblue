@@ -358,9 +358,10 @@ module.exports = function CustomObjectServiceModule(pb) {
 
         //make sure we have the type for the object passed in
         getCustObjType(custObjType, function(err, custObjType) {
-            if (util.isError(err)) {
+            if (util.isError(err) || util.isNullOrUndefined(custObjType)) {
                return cb(err);
             }
+
             var tasks = util.getTasks(Object.keys(custObjType.fields), function(fieldNames, i) {
                 return function(callback) {
 
@@ -703,6 +704,7 @@ module.exports = function CustomObjectServiceModule(pb) {
 
     /**
      * Validates the fields of a custom object
+     * @method validateCustObjFields
      * @param {Object} custObj The object to validate
      * @param {Object} custObjType The custom object type to validate against
      * @param {Function} cb A callback that takes two parameters. The first is an
@@ -931,7 +933,8 @@ module.exports = function CustomObjectServiceModule(pb) {
     /**
      * Deletes a custom object by ID
      * @method deleteById
-     * @param {String} 
+     * @param {String} id
+     * @param {Function} cb
      */
     CustomObjectService.prototype.deleteById = function(id, cb) {
         var dao = new pb.DAO();
@@ -978,7 +981,7 @@ module.exports = function CustomObjectServiceModule(pb) {
      * @param {String|Object} custObjType A string ID of the custom object type or 
      * the custom object type itself.
      * @param {Object} [options={}]
-     * @param 
+     * @param {Function} cb
      */
     CustomObjectService.prototype.deleteForType = function(custObjType, cb) {
 

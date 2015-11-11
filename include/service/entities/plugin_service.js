@@ -46,14 +46,14 @@ module.exports = function PluginServiceModule(pb) {
          * @property pluginSettingsService
          * @type {SimpleLayeredService}
          */
-        this.pluginSettingsService = PluginService.genSettingsService('plugin_settings', caching.useMemory, caching.useCache, 'PluginSettingService');
+        this.pluginSettingsService = PluginService.genSettingsService('plugin_settings', caching.use_memory, caching.use_cache, 'PluginSettingService');
 
         /**
          * A setting service that sets and retrieves the settings for plugins
          * @property pluginSettingsService
          * @type {SimpleLayeredService}
          */
-        this.themeSettingsService  = PluginService.genSettingsService('theme_settings', caching.useMemory, caching.useCache, 'ThemeSettingService');
+        this.themeSettingsService  = PluginService.genSettingsService('theme_settings', caching.use_memory, caching.use_cache, 'ThemeSettingService');
     }
 
     //constants
@@ -533,7 +533,7 @@ module.exports = function PluginServiceModule(pb) {
 
         //add cache service
         if (useCache) {
-            services.push(new pb.CacheEntityService(objType));
+            services.push(new pb.CacheEntityService(objType, undefined, undefined, 3600));
         }
 
         //always add DB
@@ -1289,13 +1289,10 @@ module.exports = function PluginServiceModule(pb) {
      * @method installPluginDependencies
      * @param {String} pluginDirName
      * @param {Object} dependencies
+     * @param {Object} plugin
      * @param {Function} cb
      */
     PluginService.prototype.installPluginDependencies = function(pluginDirName, dependencies, plugin, cb) {
-        if (util.isFunction(plugin)) {
-            cb = plugin;
-            plugin = null;
-        }
 
         //verify parameters
         if (!pb.validation.validateNonEmptyStr(pluginDirName, true) || !util.isObject(dependencies)) {
@@ -1356,7 +1353,7 @@ module.exports = function PluginServiceModule(pb) {
                     pb.log.warn('PluginService: Reached maximum retry count trying to verify dependencies');
                     return onDone(null, false);
                 }
-
+                           
                 //proceed to check to see if all dependencies are there
                 self.hasDependencies(plugin, function(err, hasDependencies) {
                     if (hasDependencies) {
@@ -1894,7 +1891,7 @@ module.exports = function PluginServiceModule(pb) {
      * Validates the path of a main module file.  The path is considered valid if
      * the path points to JS file.  The path may be absolute or relative to the
      * specific plugin directory.
-     *
+     * @method validateMainModulePath
      * @param mmPath The relative or absolute path to the main module file
      * @param pluginDirName The name of the directory housing the plugin
      * @return {Boolean} TRUE if the path is valid, FALSE if not
@@ -1905,7 +1902,7 @@ module.exports = function PluginServiceModule(pb) {
 
     /**
      * Validates a setting from a details.json file.
-     *
+     * @method validateSetting
      * @param setting The setting to validate
      * @param position The position in the settings array where the setting resides
      * as a 0 based index.
@@ -2089,12 +2086,10 @@ module.exports = function PluginServiceModule(pb) {
             //get the routes
             ControllerPrototype.getRoutes(function(err, routes) {
                 if (util.isError(err)) {
-                    cb(err, null);
-                    return;
+                    return cb(err, null);
                 }
                 else if (!util.isArray(routes)) {
-                    cb(new Error('Controller at ['+pathToController+'] did not return an array of routes'), null);
-                    return;
+                    return cb(new Error('Controller at ['+pathToController+'] did not return an array of routes'), null);
                 }
 
                 //attempt to register route

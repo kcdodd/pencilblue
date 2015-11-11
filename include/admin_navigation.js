@@ -169,35 +169,31 @@ module.exports = function AdminNavigationModule(pb) {
             title: 'SETTINGS',
             icon: 'cogs',
             href: '#',
-            access: SecurityService.ACCESS_WRITER,
+            access: SecurityService.ACCESS_ADMINISTRATOR,
             children: [
                 {
                     id: 'site_settings',
                     title: 'SITE_SETTINGS',
                     icon: 'cog',
-                    href: '/admin/site_settings',
-                    access: SecurityService.ACCESS_MANAGING_EDITOR
+                    href: '/admin/site_settings'
                 },
                 {
                     id: 'content_settings',
                     title: 'CONTENT',
                     icon: 'quote-right',
-                    href: '/admin/site_settings/content',
-                    access: SecurityService.ACCESS_MANAGING_EDITOR
+                    href: '/admin/site_settings/content'
                 },
                 {
                     id: 'email_settings',
                     title: 'EMAIL',
                     icon: 'envelope',
-                    href: '/admin/site_settings/email',
-                    access: SecurityService.ACCESS_MANAGING_EDITOR
+                    href: '/admin/site_settings/email'
                 },
                 {
                     id: 'library_settings',
                     title: 'LIBRARIES',
                     icon: 'book',
-                    href: '/admin/site_settings/libraries',
-                    access: SecurityService.ACCESS_MANAGING_EDITOR
+                    href: '/admin/site_settings/libraries'
                 }
             ]
         },
@@ -222,7 +218,7 @@ module.exports = function AdminNavigationModule(pb) {
      * @private
      * @static
      * @method getDefaultNavigation
-     * @returns {Array}
+     * @return {Array}
      */
     function getDefaultNavigation() {
         return util.clone(DEFAULT_NAV);
@@ -233,29 +229,29 @@ module.exports = function AdminNavigationModule(pb) {
      * @private
      * @static
      * @method getAdditions
-     * @returns {Array}
+     * @return {Array}
      */
     function getAdditions() {
         return util.clone(AdminNavigation.additions);
-    };
+    }
 
     /**
      *
      * @private
      * @static
      * @method getChildrenAdditions
-     * @returns {Object}
+     * @return {Object}
      */
     function getChildrenAdditions() {
         return util.clone(AdminNavigation.childrenAdditions);
-    };
+    }
 
     /**
      *
      * @private
      * @static
      * @method buildNavigation
-     * @returns {Array}
+     * @return {Array}
      */
     function buildNavigation() {
         var i;
@@ -290,13 +286,13 @@ module.exports = function AdminNavigationModule(pb) {
 
 
             if (!util.isArray(nav.children)) {
-                navigation[i].children = [];
+                nav.children = [];
             }
             util.arrayPushAll(children, nav.children);
         });
 
         return navigation;
-    };
+    }
 
     /**
      * @private
@@ -304,7 +300,7 @@ module.exports = function AdminNavigationModule(pb) {
      * @method localizeNavigation
      * @param navigation
      * @param ls
-     * @returns {*}
+     * @return {*}
      */
     function localizeNavigation(navigation, ls) {
         navigation.forEach(function(nav) {
@@ -314,7 +310,7 @@ module.exports = function AdminNavigationModule(pb) {
             }
         });
         return navigation;
-    };
+    }
 
     /**
      * @private
@@ -322,7 +318,7 @@ module.exports = function AdminNavigationModule(pb) {
      * @method isDuplicate
      * @param {String} id
      * @param {Array} navigation
-     * @returns {boolean}
+     * @return {boolean}
      */
     function isDuplicate(id, navigation) {
         if (!navigation) {
@@ -332,7 +328,7 @@ module.exports = function AdminNavigationModule(pb) {
         for (var i = 0; i < navigation.length; i++) {
             var node = navigation[i];
 
-            if (node.id == id) {
+            if (node.id === id) {
                 return true;
             }
             if (node.children && isDuplicate(id, node.children)) {
@@ -340,7 +336,7 @@ module.exports = function AdminNavigationModule(pb) {
             }
         }
         return false;
-    };
+    }
 
     /**
      * @private
@@ -351,7 +347,7 @@ module.exports = function AdminNavigationModule(pb) {
      */
     function isDefaultNode(id) {
         return isDuplicate(id, getDefaultNavigation());
-    };
+    }
 
     /**
      * Retrive the admin navigation hierarchy
@@ -378,7 +374,7 @@ module.exports = function AdminNavigationModule(pb) {
      * @method addChild
      * @param {String} parentId
      * @param {Object} node
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     AdminNavigation.addChild = function (parentId, node) {
         if (isDuplicate(node.id)) {
@@ -398,7 +394,7 @@ module.exports = function AdminNavigationModule(pb) {
      * @static
      * @method add
      * @param {Object} node
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     AdminNavigation.add = function (node) {
         if (isDuplicate(node.id)) {
@@ -415,7 +411,7 @@ module.exports = function AdminNavigationModule(pb) {
      * @method remove
      * @param id
      * @param navigation
-     * @returns {boolean}
+     * @return {boolean}
      */
     AdminNavigation.remove = function (id) {
         if (!isDuplicate(id, buildNavigation())) {
@@ -429,7 +425,7 @@ module.exports = function AdminNavigationModule(pb) {
 
         function removeNode(id, navigation) {
             for (var i = 0; i < navigation.length; i++) {
-                if (navigation[i].id == id) {
+                if (navigation[i].id === id) {
                     navigation.splice(i, 1);
                     return navigation;
                 }
@@ -444,9 +440,9 @@ module.exports = function AdminNavigationModule(pb) {
 
         AdminNavigation.additions = removeNode(id, AdminNavigation.additions);
 
-        for (var parentId in AdminNavigation.childrenAdditions) {
-            AdminNavigation.childrenAdditions[parentId] = removeNode(id, AdminNavigation.childrenAdditions[parentId]);
-        }
+        util.forEach(AdminNavigation.childrenAdditions, function(node, parentId) {
+            AdminNavigation.childrenAdditions[parentId] = removeNode(id, node);
+        });
 
         return true;
     };
@@ -457,7 +453,7 @@ module.exports = function AdminNavigationModule(pb) {
      * @param {Object} session
      * @param {Array} adminNavigation
      * @param {Array} activeItems
-     * @returns {Array}
+     * @return {Array}
      */
     AdminNavigation.removeUnauthorized = function (session, adminNavigation, activeItems) {
         for (var i = 0; i < adminNavigation.length; i++) {
@@ -471,7 +467,7 @@ module.exports = function AdminNavigationModule(pb) {
             }
 
             for (var o = 0; o < activeItems.length; o++) {
-                if (activeItems[o] == adminNavigation[i].id) {
+                if (activeItems[o] === adminNavigation[i].id) {
                     adminNavigation[i].active = 'active';
                     break;
                 }
@@ -492,8 +488,8 @@ module.exports = function AdminNavigationModule(pb) {
                             }
                         }
 
-                        for (var o = 0; o < activeItems.length; o++) {
-                            if (activeItems[o] == adminNavigation[i].children[j].id) {
+                        for (var p = 0; p < activeItems.length; p++) {
+                            if (activeItems[p] == adminNavigation[i].children[j].id) {
                                 adminNavigation[i].children[j].active = 'active';
                                 break;
                             }

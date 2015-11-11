@@ -48,6 +48,7 @@ function PencilBlue(config){
      * To be called when the configuration is loaded.  The function is responsible
      * for triggered the startup of the HTTP connection listener as well as start a
      * connection pool to the core DB.
+     * @method init
      */
     this.init = function(){
         var self = this;
@@ -186,8 +187,16 @@ function PencilBlue(config){
                 var options = {
                     key: fs.readFileSync(pb.config.server.ssl.key),
                     cert: fs.readFileSync(pb.config.server.ssl.cert),
-                    ca: fs.readFileSync(pb.config.server.ssl.chain)
                 };
+                
+                //the certificate authority or "chain" is optional.  Needed for 
+                //self-signed certs
+                var chainPath = pb.config.server.ssl.chain;
+                if (util.isString(chainPath)) {
+                    options.ca = fs.readFileSync(chainPath);
+                }
+                
+                //create the server with options & callback
                 pb.server = https.createServer(options, function(req, res) {
                     self.onHttpConnect(req, res);
                 });
@@ -310,14 +319,14 @@ function PencilBlue(config){
 
     /**
      * Starts up the instance of PencilBlue
-     *
+     * @method start
      */
     this.start = function() {
         var self = this;
         pb.system.onStart(function(){
             self.init();
         });
-    }
+    };
 };
 
 //start system only when the module is called directly

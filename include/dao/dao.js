@@ -105,7 +105,7 @@ module.exports = function DAOModule(pb) {
      * @param {String}   key        The key to search for
      * @param {*}        val        The value to search for
      * @param {String}   collection The collection to search in
-     * @param {Object}   Key value pair object to exclude the retrival of data
+     * @param {Object}   opts Key value pair object to exclude the retrival of data
      * @param {Function} cb         Callback function
      */
     DAO.prototype.loadByValue = function(key, val, collection, opts, cb) {
@@ -120,7 +120,7 @@ module.exports = function DAOModule(pb) {
      * @method loadByValues
      * @param {Object}   where      Key value pair object
      * @param {String}   collection The collection to search in
-     * @param {Object}   Key value pair object to exclude the retrival of data
+     * @param {Object}   opts Key value pair object to exclude the retrival of data
      * @param {Function} cb         Callback function
      */
     DAO.prototype.loadByValues = function(where, collection, opts, cb) {
@@ -153,6 +153,7 @@ module.exports = function DAOModule(pb) {
      */
     DAO.prototype.count = function(entityType, where, cb) {
         var options = {
+            count: true,
             entityType: entityType,
             where: where
         };
@@ -335,8 +336,8 @@ module.exports = function DAOModule(pb) {
 
             //log the result
             if(pb.config.db.query_logging){
-                var query = "DAO: SELECT %j FROM %s.%s WHERE %j";
-                var args = [select, self.dbName, entityType, where];
+                var query = "DAO: %s %j FROM %s.%s WHERE %j";
+                var args = [options.count ? 'COUNT' : 'SELECT', select, self.dbName, entityType, where];
                 if (typeof orderBy !== 'undefined') {
                     query += " ORDER BY %j";
                     args.push(orderBy);
@@ -383,6 +384,10 @@ module.exports = function DAOModule(pb) {
             return cb(new Error('The dbObj parameter must be an object'));
         }
 
+        //ensure an object_type was specified & update common fields
+        dbObj.object_type = dbObj.object_type || options.object_type;
+        DAO.updateChangeHistory(dbObj);
+        
         //log interaction
         if (pb.config.db.query_logging) {
             var msg;
@@ -394,10 +399,6 @@ module.exports = function DAOModule(pb) {
             }
             pb.log.info(msg);
         }
-
-        //ensure an object_type was specified & update common fields
-        dbObj.object_type = dbObj.object_type || options.object_type;
-        DAO.updateChangeHistory(dbObj);
 
         //retrieve db reference
         this.getDb(function(err, db) {
@@ -420,6 +421,7 @@ module.exports = function DAOModule(pb) {
      * @param {Array} objArray The array of objects to persist
      * @param {String} collection The collection to persist the objects to
      * @param {Object} [options] See http://mongodb.github.io/node-mongodb-native/api-generated/collection.html#initializeunorderedbulkop
+     * @param {Boolean} [options.replace=true] Indicates if the default should be to update the fields available or to replace the document
      * @param {Function} cb A callback that takes two arguments.  The first is an
      * error, if occurred. The second is the second parameter of the callback
      * described here: http://mongodb.github.io/node-mongodb-native/api-generated/unordered.html#execute
@@ -440,6 +442,9 @@ module.exports = function DAOModule(pb) {
         else if (!util.isString(collection)) {
             return cb(new Error('COLLECTION_MUST_BE_STR'));
         }
+        
+        //ensure we have default options
+        options.replace = util.isNullOrUndefined(options.replace) ? true : !!options.replace;
 
         //retrieve db reference
         this.getDb(function(err, db) {
@@ -456,8 +461,9 @@ module.exports = function DAOModule(pb) {
 
                 item.object_type = collection;
                 DAO.updateChangeHistory(item);
-                if (item[DAO.getIdField()]) {
-                    batch.update(item);
+                if (item._id) {
+                    batch.find({_id: item._id})
+                        .updateOne(options.replace ? item : {$set: item });
                 }
                 else {
                     batch.insert(item);
@@ -676,7 +682,7 @@ module.exports = function DAOModule(pb) {
             if (util.isError(err)) {
                 return cb(err);
             }
-            db.collectionNames(entity, options, function(err, results) {
+            db.listCollections({name: entity}, options).toArray(function(err, results) {
                 cb(err, util.isArray(results) && results.length === 1);
             });
         });
@@ -758,6 +764,7 @@ module.exports = function DAOModule(pb) {
      * @return {Object} Where clause
      */
     DAO.getIdInWhere = function(objArray, idProp) {
+        var seen = {};
         var idArray = [];
         for(var i = 0; i < objArray.length; i++) {
 
@@ -768,7 +775,10 @@ module.exports = function DAOModule(pb) {
             else{
                 rawId = objArray[i];
             }
-            idArray.push(DAO.getObjectId(rawId));
+            if (!seen[rawId]) {
+                seen[rawId] = true;
+                idArray.push(DAO.getObjectId(rawId));
+            }
         }
         return {
             _id: {$in: idArray}

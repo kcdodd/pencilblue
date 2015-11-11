@@ -16,26 +16,23 @@
 */
 
 //dependencies
-var async          = require('async');
-var util           = require('../../include/util.js');
+var async = require('async');
+var util  = require('../../include/util.js');
 
 module.exports = function ApiActionControllerModule(pb) {
 
-    //module dependencies
+    //pb dependencies
     var BaseController = pb.BaseController;
-    var PluginService  = pb.PluginService;
-    var RequestHandler = pb.RequestHandler;
     
     /**
      * Controller interface used to map simple actions to handlers and provide
      * a flow for validation and error handling.
+     * @deprecated Since 0.4.1
      * @class ApiActionController
      * @constructor
      * @extends BaseController
      */
     function ApiActionController(){}
-
-    //inheritance
     util.inherits(ApiActionController, BaseController);
 
     /**

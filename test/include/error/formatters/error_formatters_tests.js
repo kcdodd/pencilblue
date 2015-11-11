@@ -91,8 +91,22 @@ describe('ErrorFormatters', function() {
     describe('ErrorFormatters.xml', function() {
         
         it('should return a string that represents XML', function(next) {
+            var error = new Error('hello world validation error');
+            error.code = 400;
+            error.validationErrors = [
+                {
+                    field: '<name>',
+                    message: 'it is required',
+                    code: 'V1001'
+                },
+                {
+                    field: 'id',
+                    message: 'it should be there & be square',
+                    code: 'V1002'
+                },
+            ];
             var params = {
-                error: new Error('hello world')
+                error: error
             };
             ErrorFormatters.xml(params, function(err, result){
                 

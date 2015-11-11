@@ -38,17 +38,43 @@ module.exports = function(pb) {
      * @submodule Entities
      * @param {Object} [localizationService] The localization service object
      */
-    function TemplateService(localizationService){
-        this.localCallbacks      = {
+    function TemplateService(opts){
+        var localizationService;
+        if (!opts || (opts instanceof pb.Localization)) {
+            localizationService = opts;
+            opts = {};
+        }
+        else {
+            localizationService = opts.ls;
+        }
+        
+        /**
+         * @property localCallbacks
+         * @type {Object}
+         */
+        this.localCallbacks = {
             year: (new Date()).getFullYear()
         };
 
+        /**
+         * @property localizationService
+         * @type {Localization}
+         */
         this.localizationService = null;
         if (localizationService) {
             this.localizationService = localizationService;
         }
+        
+        /**
+         * @property activeTheme
+         */
+        this.activeTheme = opts.activeTheme;
 
-        //set the prioritized template as not specified
+        /**
+         * The prioritized theme when selecting templates
+         * @property theme
+         * @type {String}
+         */
         this.theme = null;
 
         //ensure template loader is initialized
@@ -208,6 +234,20 @@ module.exports = function(pb) {
     TemplateService.prototype.setReprocess = function(reprocess) {
         this.reprocess = reprocess ? true : false;
     };
+    
+    /**
+     * Retrieves the active theme.  When not provided the service retrieves it 
+     * from the settings service.
+     * @private
+     * @method _getActiveTheme
+     * @param {Function} cb
+     */
+    TemplateService.prototype._getActiveTheme = function(cb) {
+        if (this.activeTheme) {
+            return cb(null, this.activeTheme);
+        }
+        pb.settings.get('active_theme', cb);
+    };
 
     /**
      * Retrieves the raw template based on a priority.  The path to the template is
@@ -233,7 +273,7 @@ module.exports = function(pb) {
         if (hintedTheme) {
             paths.push(TemplateService.getCustomPath(this.getTheme(), relativePath));
         }
-        pb.settings.get('active_theme', function(err, activeTheme){
+        this._getActiveTheme(function(err, activeTheme){
             if (activeTheme !== null) {
                 paths.push(TemplateService.getCustomPath(activeTheme, relativePath));
             }
@@ -279,11 +319,14 @@ module.exports = function(pb) {
      * @param {function} cb               Callback function
      */
     TemplateService.prototype.load = function(templateLocation, cb) {
+        if (!util.isFunction(cb)) {
+            throw new Error('cb parameter must be a function');
+        }
+        
         var self = this;
         this.getTemplateContentsByPriority(templateLocation, function(err, templateContents) {
             if (util.isError(err)) {
                 return cb(err, null);
-                return;
             }
             else if (!templateContents) {
                 return cb(new Error('Failed to find a matching template for location: '+templateLocation), null);
@@ -298,15 +341,17 @@ module.exports = function(pb) {
      * parameter that is the populated template with any registered flags replaced.
      *
      * @method process
-     * @param {string} content The raw content to be inspected for flags
+     * @param {Object} content The raw content to be inspected for flags
      * @param {function} cb Callback function
      */
     TemplateService.prototype.process = function(content, cb) {
         if (!util.isObject(content)) {
-            cb(new Error("TemplateService: A valid content string is required in order for the template engine to process the value. Content="+util.inspect(content)), content);
-            return;
+            return cb(new Error("TemplateService: A valid content object is required in order for the template engine to process the value. Content="+util.inspect(content)), content);
         }
-
+        else if (!util.isFunction(cb)) {
+            throw new Error('cb parameter must be a function');
+        }
+        
         //iterate parts
         var self  = this;
         var tasks = util.getTasks(content.parts, function(parts, i) {
@@ -499,7 +544,7 @@ module.exports = function(pb) {
     TemplateService.prototype.getTemplatesForActiveTheme = function(cb) {
         var self = this;
         
-        pb.settings.get('active_theme', function(err, activeTheme) {
+        this._getActiveTheme(function(err, activeTheme) {
             if(util.isError(err) || activeTheme == null) {
                 cb(err, []);
                 return;
@@ -540,7 +585,34 @@ module.exports = function(pb) {
             });
         });
     };
+    
+    /**
+     * Creates an instance of Template service based 
+     * @method getChildInstance
+     * @return {TemplateService}
+     */
+    TemplateService.prototype.getChildInstance = function() {
+        
+        var opts = {
+            ls: this.localizationService,
+            activeTheme: this.activeTheme
+        };
+        var childTs                     = new TemplateService(opts);
+        childTs.theme                   = this.theme;
+        childTs.localCallbacks          = util.merge(this.localCallbacks, {});
+        childTs.reprocess               = this.reprocess;
+        childTs.unregisteredFlagHandler = this.unregisteredFlagHandler;
+        return childTs;
+    };
 
+    /**
+     * Determines if the content provided is equal to the flag
+     * @static
+     * @method isFlag
+     * @param {String} content
+     * @param {String} flag
+     * @return {String}
+     */
     TemplateService.isFlag = function(content, flag) {
         return util.isString(content) && (content.length === 0 || ('^'+flag+'^') === content);
     };

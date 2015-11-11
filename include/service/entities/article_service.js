@@ -34,8 +34,28 @@ module.exports = function ArticleServiceModule(pb) {
      *
      */
     function ArticleService(){
-        this.object_type = 'article';
+        this.object_type = ARTICLE_TYPE;
     }
+    
+    /**
+     *
+     * @private
+     * @static
+     * @readonly
+     * @property ARTICLE_TYPE
+     * @type {String}
+     */
+    var ARTICLE_TYPE = 'article'
+    
+    /**
+     *
+     * @private
+     * @static
+     * @readonly
+     * @property PAGE_TYPE
+     * @type {String}
+     */
+    var PAGE_TYPE = 'page';
 
     /**
      * Rerieves the content type
@@ -178,7 +198,7 @@ module.exports = function ArticleServiceModule(pb) {
 
                     var tasks = util.getTasks(articles, function(articles, i) {
                         return function(callback) {
-                            self.processArticleForDisplay(articles[i], articles.length, authors, contentSettings, function(){
+                            self.processArticleForDisplay(articles[i], articles.length, authors, contentSettings, options, function(){
                                 callback(null, null);
                             });
                         };
@@ -194,19 +214,19 @@ module.exports = function ArticleServiceModule(pb) {
 
     /**
      * Updates articles
-     *
+     * @method update
      * @param {String} articleId	id of article
      * @param {Object} fields	fields to update
      * @param {Object} options
      * @param {Function} cb      Callback function
      */
     ArticleService.prototype.update = function(articleId, fields, options, cb) {
-            if(!util.isObject(fields)){
-                    return cb(new Error('The fields parameter is required'));
-            }
+        if(!util.isObject(fields)){
+                return cb(new Error('The fields parameter is required'));
+        }
 
         var where = pb.DAO.getIdWhere(articleId);
-            var content_type = this.getContentType();
+        var content_type = this.getContentType();
 
         var dao  = new pb.DAO();
         dao.updateFields(content_type, where, fields, options, cb);
@@ -223,10 +243,15 @@ module.exports = function ArticleServiceModule(pb) {
      * @param {Object}   contentSettings Content settings to use for processing
      * @param {Function} cb              Callback function
      */
-    ArticleService.prototype.processArticleForDisplay = function(article, articleCount, authors, contentSettings, cb) {
+    ArticleService.prototype.processArticleForDisplay = function(article, articleCount, authors, contentSettings, options, cb) {
+        if (util.isFunction(options)) {
+            cb = options;
+            options = cb;
+        }
+        
         var self = this;
 
-        if (this.getContentType() === 'article') {
+        if (this.getContentType() === ARTICLE_TYPE) {
             if(contentSettings.display_bylines) {
 
                 for(var j = 0; j < authors.length; j++) {
@@ -318,16 +343,22 @@ module.exports = function ArticleServiceModule(pb) {
 
         article.layout  = article.article_layout;
         var mediaLoader = new MediaLoader();
-        mediaLoader.start(article[this.getContentType()+'_layout'], function(err, newLayout) {
+        mediaLoader.start(article[this.getContentType()+'_layout'], options, function(err, newLayout) {
             article.layout = newLayout;
             delete article.article_layout;
 
-            if (self.getContentType() === 'article') {
+            if (self.getContentType() === ARTICLE_TYPE && ArticleService.allowComments(contentSettings, article)) {
 
-                var where = {article: article[pb.DAO.getIdField()].toString()};
-                var order = {created: pb.DAO.ASC};
+                var opts = {
+                    where: {
+                        article: article[pb.DAO.getIdField()].toString()
+                    },
+                    order: {
+                        created: pb.DAO.ASC
+                    }
+                };
                 var dao   = new pb.DAO();
-                dao.q('comment', {where: where, select: pb.DAO.PROJECT_ALL, order: order}, function(err, comments) {
+                dao.q('comment', opts, function(err, comments) {
                     if(util.isError(err) || comments.length == 0) {
                         return cb(null, null);
                     }
@@ -425,98 +456,83 @@ module.exports = function ArticleServiceModule(pb) {
      * Retrieves the article and byline templates
      *
      * @method getTemplates
+     * @param {Object} [opts]
      * @param {Function} cb Callback function
      */
-    ArticleService.prototype.getTemplates = function(cb) {
-        var ts = new pb.TemplateService();
+    ArticleService.prototype.getTemplates = function(opts, cb) {
+        if (util.isFunction(opts)) {
+            cb = opts;
+            opts = {};
+        }
+        
+        var ts = new pb.TemplateService(opts);
         ts.load('elements/article', function(err, articleTemplate) {
             ts.load('elements/article/byline', function(err, bylineTemplate) {
                 cb(articleTemplate, bylineTemplate);
             });
         });
     };
+    
+    /**
+     * Retrieves the SEO metadata for the specified content.  
+     * @method getMetaInfo
+     * @param {Object} article The article to retrieve information for
+     * @param {Function} cb A callback that takes two parameters.  The first is 
+     * an Error, if occurred.  The second is an object that contains 4 
+     * properties: 
+     * title - the SEO title, 
+     * description - the SEO description, 
+     * keywords - an array of SEO keywords that describe the content, 
+     * thumbnail - a URI path to the thumbnail image 
+     */
+    ArticleService.prototype.getMetaInfo = function(article, cb) {
+        var serviceV2 = new pb.ArticleServiceV2();
+        serviceV2.getMetaInfo(article, cb);
+    };
 
     /**
      * Retrieves the meta info for an article or page
-     *
+     * @deprecated Since 0.4.1
      * @method getMetaInfo
      * @param {Object}   article An article or page object
      * @param {Function} cb      Callback function
      */
-    ArticleService.getMetaInfo = function(article, cb)
-    {
-        if(typeof article === 'undefined')
-        {
-            cb('', '', '');
-            return;
+    ArticleService.getMetaInfo = function(article, cb) {
+        if(util.isNullOrUndefined(article)) {
+            return cb('', '', '');
         }
-
-        var keywords = article.meta_keywords || [];
-        var topics = article.article_topics || article.page_topics || [];
-        var thumbnail = '';
-        var instance = this;
-        var dao = new pb.DAO();
-
-        this.loadTopic = function(index)
-        {
-            if(index >= topics.length)
-            {
-                var description = '';
-                if(article.meta_desc)
-                {
-                    description = article.meta_desc;
-                }
-                else if(article.layout)
-                {
-                    description = article.layout.replace(/<\/?[^>]+(>|$)/g, '').substr(0, 155);
+        
+        //log deprecation
+        pb.log.warn('ArticleService: ArticleService.getMetaInfo is deprecated and will be removed 0.5.0.  Use the prototype function getMetaInfo instead');
+        
+        //all wrapped up to ensure we can be multi-threaded here for backwards 
+        //compatibility
+        (function(cb) {
+            
+            var articleService = new ArticleService();
+            articleService.getMetaInfo(article, function(err, meta) {
+                if (util.isError(err)) {
+                    return cb('', '', '');
                 }
 
-                cb(keywords.join(','), description, (article.seo_title) ? article.seo_title : article.headline, thumbnail);
-                return;
-            }
-
-            dao.loadById(topics[index], 'topic', function(err, topic) {
-                if(util.isError(err) || !topic) {
-                    pb.log.error('ArticleService: Failed to load topic. %s', err.stack);
-
-                    index++;
-                    instance.loadTopic(index);
-                    return;
-                }
-
-                var topicName = topic.name;
-                var keywordMatch = false;
-
-                for(var i = 0; i < keywords.length; i++) {
-                    if(topicName == keywords[i]) {
-                        keywordMatch = true;
-                        break;
-                    }
-                }
-
-                if(!keywordMatch)
-                {
-                    keywords.push(topicName);
-                }
-                index++;
-                instance.loadTopic(index);
+                cb(meta.keywords, meta.description, meta.title, meta.thumbnail);
             });
-        };
-
-        if(!article.thumbnail || !article.thumbnail.length) {
-            this.loadTopic(0);
-        }
-        else {
-            dao.loadById(article.thumbnail, 'media', function(err, media) {
-                if(util.isError(err) || !media) {
-                    instance.loadTopic(0);
-                    return;
-                }
-
-                thumbnail = media.location;
-                instance.loadTopic(0);
-            });
-        }
+        })(cb);
+    };
+    
+    /**
+     * Provided the content descriptor and the content settings object the 
+     * function indicates if comments should be allowed within the given 
+     * context of the content.
+     * @method allowComments
+     * @param {Object} contentSettings The settings object retrieved from the 
+     * content service
+     * @param {Object} content The page or article that should or should not 
+     * have associated comments.
+     * @return {Boolean}
+     */
+    ArticleService.allowComments = function(contentSettings, content) {
+        return contentSettings.allow_comments && content.allow_comments;
     };
 
     /**
@@ -527,7 +543,14 @@ module.exports = function ArticleServiceModule(pb) {
      * @constructor
      * @submodule Entities
      */
-    function MediaLoader() {};
+    function MediaLoader() {
+    
+        /**
+         * @property mediaService
+         * @type {MediaService}
+         */
+        this.mediaService = new pb.MediaService();
+    };
 
     /**
      * Processes an article or page to insert media
@@ -536,15 +559,70 @@ module.exports = function ArticleServiceModule(pb) {
      * @param  {String}   articleLayout The HTML layout of the article or page
      * @param  {Function} cb            [description]
      */
-    MediaLoader.prototype.start = function(articleLayout, cb) {
+    MediaLoader.prototype.start = function(articleLayout, options, cb) {
+        if (util.isFunction(options)) {
+            cb = options;
+            options = {};
+        }
+        if (!util.isObject(options.media)) {
+            options.media = {};
+        }
+        
+        //scan for media that should be retrieved
+        var flags = this.scanForFlags(articleLayout);
+        if (flags.length === 0) {
+            return cb(null, articleLayout);
+        }
+        
+        //reconcile what media is already cached and that which should be loaded
+        var idsToRetrieve = [];
+        flags.forEach(function(flag) {
+            if (!options.media[flag.id]) {
+                idsToRetrieve.push(flag.id);
+            };
+        });
+        
+        //when all media is already cached just do the processing
+        if (idsToRetrieve.length === 0) {
+            return this.onMediaAvailable(articleLayout, options, cb);
+        }
+        
+        //retrieve the media that we need
         var self = this;
-        var ts   = new pb.TemplateService();
-        ts.load('elements/media', function(err, mediaTemplate) {
-
+        var opts = {
+            where: idsToRetrieve.length === 1 ? pb.DAO.getIdWhere(idsToRetrieve[0]) : pb.DAO.getIdInWhere(idsToRetrieve)
+        };
+        this.mediaService.get(opts, function(err, media) {
+            if (util.isError(err)) {
+                return cb(err);
+            }
+            
+            //cache the retrieved media
+            var idField = pb.DAO.getIdField();
+            media.forEach(function(mediaItem) {
+                options.media[mediaItem[idField].toString()] = mediaItem;
+            });
+            
+            self.onMediaAvailable(articleLayout, options, cb);
+        });
+    };
+    
+    /**
+     * @method onMediaAvailable
+     * @param {String} articleLayout
+     * @param {Object} options
+     * @param {Function} cb
+     */
+    MediaLoader.prototype.onMediaAvailable = function(articleLayout, options, cb) {
+        var self = this;
+        
+        this.getMediaTemplate(options, function(err, mediaTemplate) {
+            options.mediaTemplate = mediaTemplate;
+            
             async.whilst(
                 function() {return articleLayout.indexOf('^media_display_') >= 0;},
                 function(callback) {
-                    self.replaceMediaTag(articleLayout, mediaTemplate, function(err, newArticleLayout) {
+                    self.replaceMediaTag(articleLayout, mediaTemplate, options.media, function(err, newArticleLayout) {
                         articleLayout = newArticleLayout;
                         callback();
                     });
@@ -555,14 +633,54 @@ module.exports = function ArticleServiceModule(pb) {
             );
         });
     };
+    
+    /**
+     * Retrieves the media template for rendering media
+     * @method getMediaTemplate
+     * @param {Object} options
+     * @param {Function} cb
+     */
+    MediaLoader.prototype.getMediaTemplate = function(options, cb) {
+        if (options.mediaTemplate) {
+            return cb(null, options.mediaTemplate);
+        }
+        
+        var templatePath = options.mediaTemplatePath || 'elements/media';
+        var ts = new pb.TemplateService(options);
+        ts.load('elements/media', cb);
+    };
+    
+    /**
+     * Scans a string for media flags then parses them to return an array of 
+     * each one that was found
+     * @method scanForFlags
+     * @param {String} layout
+     * @return {Array}
+     */
+    MediaLoader.prototype.scanForFlags = function(layout) {
+        if (!util.isString(layout)) {
+            return [];
+        }
+        
+        var flags = [];
+        var index = 0;
+        while( (index = layout.indexOf('^media_display_')) >= 0) {
+            flags.push(pb.MediaService.extractNextMediaFlag(layout));
+            
+            var nexPosition = layout.indexOf('^', index + 1);
+            layout = layout.substr(nexPosition);
+        }
+        return flags;
+    };
 
     /**
      * Replaces an article or page layout's ^media_display^ tag with a media embed
+     * @method replaceMediaTag
      * @param {String}   layout        The HTML layout of the article or page
      * @param {String}   mediaTemplate The template of the media embed
      * @param {Function} cb            Callback function
      */
-    MediaLoader.prototype.replaceMediaTag = function(layout, mediaTemplate, cb) {
+    MediaLoader.prototype.replaceMediaTag = function(layout, mediaTemplate, mediaCache, cb) {
         var flag = pb.MediaService.extractNextMediaFlag(layout);
         if (!flag) {
             return cb(null, layout);
@@ -570,46 +688,40 @@ module.exports = function ArticleServiceModule(pb) {
 
         var mediaStyleString = flag.style;
 
-        var dao = new pb.DAO();
-        dao.loadById(flag.id, 'media', function(err, data) {
-            if(util.isError(err)) {
+        var data = mediaCache[flag.id];
+        if (!data) {
+            pb.log.warn("MediaLoader: Content contains reference to missing media [%s].", flag.id);
+            return cb(null, layout.replace(flag.flag, ''));
+        }
+
+        //ensure the max height is set if explicity set for media replacement
+        var options = {
+            view: 'post',
+            style: {
+
+            },
+            attrs: {
+                frameborder: "0",
+                allowfullscreen: ""
+            }
+        };
+        if (flag.style.maxHeight) {
+            options.style['max-height'] = flag.style.maxHeight;
+        }
+        this.mediaService.render(data, options, function(err, html) {
+            if (util.isError(err)) {
                 return cb(err);
             }
-            else if (!data) {
-                pb.log.warn("ArticleService: Content contains reference to missing media [%s].", flag.id);
-                return cb(null, layout.replace(flag.flag, ''));
-            }
 
-            //ensure the max height is set if explicity set for media replacement
-            var options = {
-                view: 'post',
-                style: {
+            //get the style for the container
+            var containerStyleStr = pb.MediaService.getStyleForPosition(flag.style.position) || '';
 
-                },
-                attrs: {
-                    frameborder: "0",
-                    allowfullscreen: ""
-                }
-            };
-            if (flag.style.maxHeight) {
-                options.style['max-height'] = flag.style.maxHeight;
-            }
-            var ms = new pb.MediaService();
-            ms.render(data, options, function(err, html) {
-                if (util.isError(err)) {
-                    return cb(err);
-                }
-
-                //get the style for the container
-                var containerStyleStr = pb.MediaService.getStyleForPosition(flag.style.position) || '';
-
-                //finish up replacements
-                var mediaEmbed = mediaTemplate.split('^media^').join(html);
-                mediaEmbed     = mediaEmbed.split('^caption^').join(data.caption);
-                mediaEmbed     = mediaEmbed.split('^display_caption^').join(data.caption ? '' : 'display: none');
-                mediaEmbed     = mediaEmbed.split('^container_style^').join(containerStyleStr);
-                cb(null, layout.replace(flag.flag, mediaEmbed));
-            });
+            //finish up replacements
+            var mediaEmbed = mediaTemplate.split('^media^').join(html);
+            mediaEmbed     = mediaEmbed.split('^caption^').join(data.caption);
+            mediaEmbed     = mediaEmbed.split('^display_caption^').join(data.caption ? '' : 'display: none');
+            mediaEmbed     = mediaEmbed.split('^container_style^').join(containerStyleStr);
+            cb(null, layout.replace(flag.flag, mediaEmbed));
         });
     };
 
